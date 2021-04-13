@@ -1,52 +1,48 @@
-<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title>所有文章 - arvin's blog</title><link>https://wzliy.github.io/posts/</link><description>所有文章 | arvin's blog</description><generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Tue, 30 Mar 2021 21:39:35 +0800</lastBuildDate><atom:link href="https://wzliy.github.io/posts/" rel="self" type="application/rss+xml"/><item><title>Java并发学习</title><link>https://wzliy.github.io/posts/java%E5%B9%B6%E5%8F%91%E5%AD%A6%E4%B9%A0/</link><pubDate>Tue, 30 Mar 2021 21:39:35 +0800</pubDate><author>作者</author><guid>https://wzliy.github.io/posts/java%E5%B9%B6%E5%8F%91%E5%AD%A6%E4%B9%A0/</guid><description>软件并发已经成为现代软件开发的基础能力，而Java精心设计的高效并发机制，正是构建大规模应用的基础之一。
-并发可以充分发挥多处理器系统的强大计算能力，随着处理器数量的持续增长，如何高效地使用并发正变得越来越重要。
-进程与线程 进程 进程使程序的一次执行过程，是系统运行的基本单位，系统运行一个程序的过程即是一个进程从创建、运行到消亡的过程。
-早期的计算机中不包含操作系统，它们从头到尾只执行一个程序，并且这个程序能够访问计算机中所有的资源。操作系统的出现使得计算机每次能运行多个程序，并且不同的程序都在单独的进程中运行：操作系统为每个独立执行的进程分配各种资源，包括内存，文件句柄以及安全证书等。如果需要的话，在不同的进程中可以通过一些粗粒度的通信机制来交换数据，包括：套接字、信号处理器、共享内存、信号量以及文件等。
-之所以在计算机中加入操作系统来实现多个程序的同时执行，主要基于以下原因：
-资源利用率：在某些情况下，程序必须等待某个外部操作执行完成，例如输入输出操作，因此，如果在等待的同时可以运行另一个程序，那么无疑将提高资源利用率。 公平性：不同的用户和程序对于计算机上的资源有着同等的使用权。一种高效的运行的方式时通过粗粒度的时间分片，使这些用户和程序能共享计算机资源。 便利性：通常来说，在计算多个任务时，应该编写多个程序，每个程序执行一个任务并在必要时相互通信，这比只编写一个程序来计算所有任务更容易实现。 线程 线程是比进程更小的执行单位。线程允许在同一个进程中存在多个程序控制流。线程会共享进程范围内的资源，例如内存句柄和文件句柄，但每个线程都有自己的程序计数器、栈以及局部变量等。
-线程也被称为轻量级进程。在大多数现代操作系统中，都是以线程为基本的调度单位，而不是进程。如果没有明确的协调机制，那么线程将彼此独立运行。由于同一个进程中所有线程都将共享进程内的内存地址空间，因此这些线程都能访问相同的变量并在同一个堆上分配对象，这就需要实现一种比在进程间共享数据粒度更细的数据共享机制。如果没有明确的同步机制来协同对共享数据的访问，那么当一个线程正在使用某个变量时，另一个线程可能同时访问这个变量，这将造成不可预测的结果。
-Java程序天生就是多线程程序：一个Java程序的运行时main线程和多个其他线程同时运行。
-线程的优势 线程可以有效降低程序的开发和维护成本，同时提升复杂应用程序的性能。线程能够将大部分的异步工作流转换成串行工作流，因此能更好地模拟人类的工作方式和交互方式。
-在GUI应用程序中，线程可以提高用户界面的响应灵敏度，而在服务器应用程序中，可以提升资源利用率以及系统吞吐率。线程还可以简化JVM的实现，垃圾收集器通常在一个或多个专门的线程中运行。在许多重要的Java应用程序中，都在一定程度上用到了线程。
-线程带来的风险 安全性问题 活跃性问题 性能问题 线程安全性 并发的核心在于线程安全，什么是线程安全？
-线程安全是一个多线程环境下正确性的概念，也就是保证多线程环境下共享的、可修改的状态的正确性。
-《Java并发编程实战》
-这里的状态可以反映在程序中其实可以看作是数据。换个角度来看，如果状态不是共享的，或者不是可修改的，也就不存在线程安全问题，所以，进而可以推理出保证线程安全的两个办法：封装(将对象内部状态隐藏保护起来，变得不可共享)，不可变（通过final或者immutable使状态不可变）。
-线程安全需要保证几个基本特性：
-原子性：简单来说就是相关操作不会中途被其他线程干扰，一般可通过同步机制实现。 可见性：一个线程修改了某个共享变量，其他线程可以同步获取修改结果，通常被解释为将线程本地状态反映到主内存上，volatile就是负责保证可见性的。 有序性：保证线程内串行语义，避免指令重排等。 解决原子性问题
-原子性问题的源头是线程切换，如果能够禁用线程切换就能从源头解决这个问题，而操作系统做线程切换是依赖cpu中断的，所以禁止CPU发生中断就能够禁止线程切换。在早期的单核CPU时代，这个方案是可行的，但在多核场景下，同一时刻，有可能有两个线程同时执行，此时禁止CPU中断，只能保证CPU上的线程连续执行，并不能保证同一时刻只有一个线程执行。
-同一个时刻只有一个线程执行，我们称之为互斥，如果能够保证对共享变量的修改是互斥的，那么，就能够保证原子性了。
-互斥锁就是用来解决原子性问题的
-锁 受保护资源和锁之间合理的关联关系应该是N:1的关系，也就是说可以用一把锁来保护多个资源，但是不能用多把锁来保护一个资源。
-用不同的锁对受保护资源进行精细化管理，能够提升性能。这种锁称为细粒度锁。
-synchronized与ReentrantLock synchronized是Java内建的同步机制，它提供了互斥的语义和可见性，当一个线程已经获取当前锁时，其他试图获取的线程只能等待或者阻塞在那里。
-ReentrantLock，通常翻译为再入锁，使Java5提供的锁实现。
-synchronized
-Java编译器会在synchronized修饰的方法或代码块前后自动加上加锁lock()和解锁uncheck()。</description></item><item><title>Java引用对象</title><link>https://wzliy.github.io/posts/java%E5%BC%95%E7%94%A8%E5%AF%B9%E8%B1%A1/</link><pubDate>Sun, 28 Mar 2021 21:39:35 +0800</pubDate><author>作者</author><guid>https://wzliy.github.io/posts/java%E5%BC%95%E7%94%A8%E5%AF%B9%E8%B1%A1/</guid><description><![CDATA[我该如何学会停止担心OutOfMemoryError
- Java堆和对象的生命周期 对于一个从C++到Java的新程序员来说，堆和栈之间的关系可能很难掌握。在C++中，可以通过new的操作在堆上创建对象，或者使用&quot;自动&quot;分配在栈上创建对象。以下是合法的C++程序：它在栈上创建了一个新对象。但是，Java编译器将其拒绝为语法报错。
-Integer foo = Integer(1); Java不同于C++，Java将所有的对象都存储于堆中，并要求通过new操作来创建对象。局部变量仍存储在栈上，但是它们持有指向对象的指针，而不是对象本身（当然，更多的是使C++程序员困惑，这些指针被称为&quot;引用&quot;）。思考下面的Java方法，该方法具有一个Integer变量，该变量引用一个从String解析的值：
-public static void foo(String bar) { Integer baz = new Integer(bar); } 下图显示了此方法的堆和栈之间的关系。栈被分为一个个的栈帧，其中包含调用树中每个方法的参数和局部变量。这些变量都指向了对象(在本例中为参数bar和局部变量baz), 指向了存活在堆中的对象。
-现在更仔细的观察foo()的第一行，分配了一个新的Integer对象。在幕后，JVM首先尝试为此对象找到足够的堆空间(在32位的JVM上大概是12字节)。如果能够分配空间，则调用构造器，该构造器解析已通过的字符串并初始化新分配的对象。最后JVM将指向这个对象的指针保存在变量baz中。
-这就是&quot;快乐之路&quot;，有几个不太快乐的地方，其中一个就是，我们关心的是当new操作不能为这个对象找到12个字节的空间时怎么处理。在这种情况下，放弃和抛出OutOfMemoryError之前，它将调用垃圾收集器，试图腾出空间。
-垃圾收集器 虽然Java提供了一个new操作来分配堆上的对象，但它没有提供相应的操作来删除它们。当foo()方法返回时，变量baz超出了范围，但它指向的对象仍然存在于堆中。如果这是故事的结尾，那么所有的程序都将很快耗尽内存。然而，Java提供了一个垃圾回收器，以便在不再引用这些对象后进行清理。
-当程序尝试创建新对象而在堆中没有足够的空间时，垃圾收集器开始工作。请求线程暂停，收集器通过查看堆空间，试图找到不再积极使用的程序对象，并回收其空间。如果收集器无法释放足够的空间，而JVM无法扩展堆，那么new操作将抛出OutOfMemoryError异常。这通常，这之后是你的应用程序关闭。
-标记扫描 Java的一个持久神话围绕着垃圾收集器展开。许多人认为，JVM保存了每个对象的引用次数，而收集器只查看引用次数为零的对象。实际上，JVM使用了一种&quot;标记扫描(Mark-sweep)&ldquo;的技术。标记扫描垃圾收集背后的理念很简单：程序无法到达的每个对象都是垃圾，可以进行回收。
-标记扫描收集有以下阶段：
-第1阶段：标记
-垃圾收集器从&quot;root&quot;引用开始，并遍历对象图，标记它到达的所有对象。
-第2阶段：扫描
-任何在第一阶段未标记的对象都是无法到达的，因此是垃圾对象。如果垃圾对象定义了终结器(fanalizer)，则将其添加到终结器队列(finalization queue)中。如果没有，它的空间可用于重新分配(确切的含义取决于特定的GC实现，并且有许多实现)。
-第3阶段：紧凑(可选)
-有些垃圾收集器有第三步：压实。在此步骤中，GC将对象移动到合并收集的垃圾留下的自由空间。这个可以防止堆空间碎片化，从而导致大的连续分配失败。
-例如，hotspot JVM 在新生代中使用压缩收集器，但在其老年代中使用非压缩收集器(至少在1.6和1.7版本)。
-root引用 那么，&ldquo;root&quot;是什么？在一个简单的Java应用程序中，它们是方法参数和局部变量(存储在栈上)，当前执行表达式的操作（也存储在栈上）和静态类成员变量。
-在使用自己的类加载器的程序中，含义变得模糊不清：只有被系统类加载器加载的类包含root引用(JVM启动时使用的加载器)。应用程序创建的任何类加载器本身都会受到垃圾收集器的约束，一旦没有更多的引用指向他们。这就是允许应用服务器进行热部署的原因：它们为每个已部署的应用程序创建一个单独的类加载器，并在应用程序未部署或重新部署时放弃类加载器的引用。
-了解root引用很重要，因为它定义了什么是&quot;强&quot;引用: 如果你能够遵循从root到特定对象的一系列引用，则该对象被&quot;强烈&quot;引用。它不会被垃圾回收。
-因此，回到foo()方法，bar参数和baz局部变量只有在方法执行时才具有强引用，一旦方法完成，它们都将超出范围，并且所引用的对象也可以进行收集。另外，foo()方法可能会返回一个它创建的Integer引用，这意味着该对象仍将被调用foo()的方法强烈引用。
-现在考虑以下事项：
-LinkedList foo = new LinkedList(); foo.add(new Integer(123)); 变量foo是一个指向LinkList对象的root引用。linked list里面有零个或多个列表元素，每个元素都指向其后续内容。当我们调用add()方法时，我们添加了一个新的list元素，并且该list元素指向一个值为123的实例。这是一个强的引用链，这意味着该Integer对象不符合收集条件。然而，一旦foo 超出了范围，LinkedList和它其中的所有内容都可以进行收集&ndash;当然，前提是没有其他的强引用指向它。
-你可能想知道，如果你有一个循环引用，会发生什么情况：对象A包含对对象B的引用，对象B包含对A的引用。答案是，标记扫描收集器不会被愚弄：如果A和B都无法通过一系列的强引用到达，那么他们都能够被收集。
-Finalizers C++允许对象定义一个清理方法：当对象脱离了作用域或被明确删除时，这个清理方法被调用用来清理其使用的资源。对于大多数对象，这意味着显式释放通过new或者malloc分配对象的任何内存。在Java中，垃圾收集器为你清理内存，因此无需明确的清理方法来处理此操作。
-但是内存并不是唯一的需要清理的资源。想想FileOutputStream: 当你创建这个对象的实例的时候，它会从操作系统分配文件句柄。如果你在关闭流之前让流的所有引用都退出作用域，该文件句柄会发生什么情况呢？答案是，流有一个Finalizer 方法：在垃圾收集器回收对象之前调用的一个方法。在这个FileOutputStream的例子中，finalizer方法关闭流，将文件句柄释放回操作系统，并冲洗任何缓冲区，确保所有数据都正确地写入磁盘。
-任何对象都可以有finalizers: 你所需要做的就是声明finalize() 方法：
-protected void finalize() throws Throwable { // cleanup your object here } 虽然finalizers似乎是一种清理自己的简单方法，但是，它们确实存在一些严重的局限性。首先，你不应该依赖他们来处理任何重要的事情，因为对象的finalizers可能永远不会被调用&ndash;应用程序可能在对象有资格进行垃圾回收之前退出。finalizers还有一些其他的更微妙的问题，稍后我们会在幻象引用的时候来讨论它。]]></description></item><item><title>引用类型</title><link>https://wzliy.github.io/posts/%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B/</link><pubDate>Sun, 28 Mar 2021 21:39:35 +0800</pubDate><author>作者</author><guid>https://wzliy.github.io/posts/%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B/</guid><description>Java的引用类型分为四种：强引用，弱引用，软引用，幻象引用。</description></item></channel></rss>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title>所有文章 - arvin's blog</title><link>https://wzliy.github.io/posts/</link><description>所有文章 | arvin's blog</description><generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Tue, 13 Apr 2021 09:00:00 +0800</lastBuildDate><atom:link href="https://wzliy.github.io/posts/" rel="self" type="application/rss+xml"/><item><title>MySQL</title><link>https://wzliy.github.io/posts/mysql/</link><pubDate>Tue, 13 Apr 2021 09:00:00 +0800</pubDate><author>作者</author><guid>https://wzliy.github.io/posts/mysql/</guid><description>索引 MySQL索引的出现其实就是为了提高数据的查询效率
+索引的常见模型
+哈希表 有序数组 索引树 索引树 B树
+B树的特征:
+关键字集合分布在整棵树中 任何一个关键字出现且只出现在一个节点中； 搜索有可能在非叶子节点结束 创建高性能的索引 索引存储在引擎层，而不是服务器层。所以，不同的存储引擎的索引的工作方式并不一样。</description></item><item><title>Redis</title><link>https://wzliy.github.io/posts/redis/</link><pubDate>Tue, 13 Apr 2021 09:00:00 +0800</pubDate><author>作者</author><guid>https://wzliy.github.io/posts/redis/</guid><description>redis内核探究</description></item><item><title>Spring Cloud之Feign</title><link>https://wzliy.github.io/posts/springcloud%E4%B9%8Bfeign/</link><pubDate>Tue, 13 Apr 2021 09:00:00 +0800</pubDate><author>作者</author><guid>https://wzliy.github.io/posts/springcloud%E4%B9%8Bfeign/</guid><description>Feign的自定义配置 Feign自定义日志级别 级别 打印内容 NONE(默认值) 不记录任何日志 BASIC 仅记录请求方法、URL、响应状态码以及执行时间 HEADERS 记录BASIC的基础上，记录请求和响应的header FULL 记录请求和响应的header、body和元数据 配置方式 Java代码方式
+新建configuration
+public class UserCenterFeignConfiguration { } 创建bean
+public class UserCenterFeignConfiguration { @Bean public Logger.Level level() { return Logger.Level.FULL; } } FeignClien注解上加上configuration配置
+@FeignClient(name = &amp;#34;user-center&amp;#34;, configuration = UserCenterFeignConfiguration.class) public interface UserCenterFeignClient { ...... } application.</description></item><item><title>Spring Cloud之Ribbon</title><link>https://wzliy.github.io/posts/springcloud%E4%B9%8Brabbon/</link><pubDate>Tue, 13 Apr 2021 09:00:00 +0800</pubDate><author>作者</author><guid>https://wzliy.github.io/posts/springcloud%E4%B9%8Brabbon/</guid><description><![CDATA[Ribbon Ribbon是一个消费端的负载均衡处理器。
+首先看一段代码：
+// 调用user-center获取user List&lt;ServiceInstance&gt; instances = discoveryClient.getInstances(&#34;user-center&#34;); List&lt;String&gt; serviceIps = instances.stream() .map(instance -&gt; instance.getUri().toString()).collect(Collectors.toList()); int i = ThreadLocalRandom.current().nextInt(serviceIps.size()); log.info(&#34;请求服务的目标ip: {}&#34;, serviceIps.get(i)); String result = restTemplate.getForObject(url, String.class, share.getUserId()); 这段代码是用来通过注册中心获取服务的地址列表，然后随机选取一个地址来进行服务调用。
+我们可以使用Ribbon来简化这个过程：
+@Bean @LoadBalanced public RestTemplate restTemplate(){ return new RestTemplate(); } String url = &#34;http://user-center/notes/user/{id}&#34;; String result = restTemplate.getForObject(url, String.class, share.getUserId()); 在RestTemplate的Bean上加上注解LoadBalanced
+在url中写上服务名，可直接调用该服务
+我们将Ribbon做的事分解一下：
+ 通过服务名获取注册中心的服务地址 通过负载均衡规则，选择服务实例  Ribbon的组成
+   接口 作用 默认值     IClientConfig 读取配置    IRule 负载均衡规则，选择实例    IPing 筛选掉ping不通的实例    ServerList 交给Ribbon的实例列表    ServerListFilter      ]]></description></item><item><title>Tomcat核心原理</title><link>https://wzliy.github.io/posts/tomcat%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86/</link><pubDate>Tue, 13 Apr 2021 09:00:00 +0800</pubDate><author>作者</author><guid>https://wzliy.github.io/posts/tomcat%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86/</guid><description>Tomact</description></item><item><title>关于</title><link>https://wzliy.github.io/posts/about/</link><pubDate>Tue, 13 Apr 2021 09:00:00 +0800</pubDate><author>作者</author><guid>https://wzliy.github.io/posts/about/</guid><description>这里是arvin的博客记录</description></item><item><title>数据结构之二叉树</title><link>https://wzliy.github.io/posts/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B9%8B%E4%BA%8C%E5%8F%89%E6%A0%91/</link><pubDate>Tue, 13 Apr 2021 09:00:00 +0800</pubDate><author>作者</author><guid>https://wzliy.github.io/posts/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B9%8B%E4%BA%8C%E5%8F%89%E6%A0%91/</guid><description>树</description></item><item><title>消息队列</title><link>https://wzliy.github.io/posts/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/</link><pubDate>Tue, 13 Apr 2021 09:00:00 +0800</pubDate><author>作者</author><guid>https://wzliy.github.io/posts/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/</guid><description>消息队列 消息对象应用场景 消息模型 消息事务 消息队列中的事务，主要解决的是消息生产者和消费者数据一致性问题。
+事务是指如果我们需要对若干数据进行更新操作，为了保证这些数据的完整性和一致性，我们希望这些更新操作要么都成功，要么都失败。
+事务有四大特性：
+原子性：一个事务中的操作不可分割， 一致性：这些数据在事务执行这个完成时间点之前，读到的一定是事务执行前的数据，之后读到的一定是事务执行更新后的数据，不可能存在读取事务更新过程中的数据 隔离性：一个事务的执行不能被其他事务干扰 持久性：一个事务一旦完成提交，后续的其他操作和故障都不会对事务的结果产生任何影响 分布式事务 分布式系统中，严格的实现ACID这四个特性几乎是不可能的，实现代价太大，大到我们无法接受
+目前大家所说的分布式事务，更多情况下，是在分布式系统中事务的不完整实现。在不同的应用场景中，有不同的实现，目的都是通过一些妥协来解决实际问题。在实际应用中，比较常见的分布式事务实现有 2PC（Two-phase Commit，也叫二阶段提交）、TCC(Try-Confirm-Cancel) 和事务消息。每一种实现都有其特定的使用场景，也有各自的问题，都不是完美的解决方案。
+事务消息适用于那些需要异步更新数据，并且对数据实时性要求不太高的场景。
+消息队列实现事务消息 事务消息需要消息队列提供相应的事务功能才能实现，Kafka 和 RocketMQ都提供了事务相关功能。
+举例说明，订单和购物车系统
+订单系统在消息队列上开启一个事务，然后，订单系统发送一个&amp;quot;半消息&amp;quot;到消息服务，这个半消息在消费端暂时不可见，当订单系统执行完本地事务成功后，再通知消息队列提交事务，消息队列才将这个消息转成消费端可消费的消息。
+如果第四步提交事务消息时失败如何处理？
+Kafka: 抛出异常，用户自行处理
+RocketMQ：通过事务反查机制，如果在提交或者回滚事务消息时发生网络异常，RocketMQ的Broker没有收到提交或者回滚的请求，Broker会定期去反查这个事务对应的本地事务的状态，然后根据这个反查的结果决定提交或者回滚这个事务，所以，我们的业务中需要提供一个事务状态反查的接口
+RocketMQ提交消息的步骤:
+发送Half消息 判断Half消息发送成功 执行本地事务 提交本地事务执行结果 消息队列确认本地事务提交结果，如果未收到本地事务执行的结果，回查事务状态 通过回查事务状态接口检查本地事务 根据本地事务状态结果提交事务到消息队列 消息队列根据本地事务状态结果投递或者回滚消息 消息丢失问题 现在主流的消息队列都提供了非常完善的消息可靠性保证机制，完成可以做到，在消息传递过程中，即使发生网络中断或者硬件故障，也能确保消息的可靠传递，不丢消息。
+检测消息丢失的办法 可以通过消息队列的有序性来检测消息是否丢失。原理非常简单，在 Producer 端，我们给每个发出的消息附加一个连续递增的序号，然后在 Consumer 端来检查这个序号的连续性。
+实现时可利用拦截器机制，在发送消息之前的拦截器中将序号注入到消息中，在消费端消费消息的拦截器中检测序号的连续性，这样实现的好处是消息检测的代码不会侵入到你的业务代码中。
+确保消息可靠传递 生产阶段: 在这个阶段，从消息在 Producer 创建出来，经过网络传输发送到 Broker 端。
+存储阶段: 在这个阶段，消息在 Broker 端存储，如果是集群，消息会在这个阶段被复制到其他的副本上。
+消费阶段: 在这个阶段，Consumer 从 Broker 上拉取消息，经过网络传输发送到 Consumer 上。</description></item><item><title>网络通信</title><link>https://wzliy.github.io/posts/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/</link><pubDate>Tue, 13 Apr 2021 09:00:00 +0800</pubDate><author>作者</author><guid>https://wzliy.github.io/posts/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/</guid><description>互联网的核心是一系列协议，总称&amp;quot;网络协议&amp;quot;。它们对电脑如何连接和组网，做出了详尽的规定。理解了这些协议，就理解了互联网原理。</description></item><item><title>面试记录</title><link>https://wzliy.github.io/posts/%E9%9D%A2%E8%AF%95%E8%AE%B0%E5%BD%95/</link><pubDate>Tue, 13 Apr 2021 09:00:00 +0800</pubDate><author>作者</author><guid>https://wzliy.github.io/posts/%E9%9D%A2%E8%AF%95%E8%AE%B0%E5%BD%95/</guid><description>面试遇到问题记录
+Spring Boot与Spring Cloud的区别 Spring Cloud的组成 怎么识别哪些数据需要缓存到Redis Maven怎么解决依赖冲突 如何优化Sql Mysql索引的数据结构 Mysql索引有什么缺点(比如一张表有十个字段，给十个字段都建立索引有什么问题) 分库如何查询的 多线程怎么使用的 Spring Boot 启动原理
+自定义启动类
+双亲委派机制
+Spring Bean的生命周期
+对象创建的过程
+垃圾回收算法
+自定义类加载器
+Redis的哨兵机制
+Kafka底层原理
+通过索引，怎么查询数据
+项目中有没有用到Spring Aop
+Spring Aop的实现原理
+面试整理 集合 经常用到哪些 Map 这几种 Map 的区别 CocurrentHashMap 怎么保证线程安全 CocurrentHashMap 在 JDK 1.</description></item></channel></rss>
