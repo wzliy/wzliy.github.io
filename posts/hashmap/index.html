@@ -1,0 +1,254 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><meta http-equiv=x-ua-compatible content="IE=edge, chrome=1"><title>HashMap底层原理 - arvin's blog</title><meta name=Description content><meta property="og:title" content="HashMap底层原理"><meta property="og:description" content="HashMap的底层原理
+数据结构中，物理存储的数据结构只有两种，即数组和链表，其余的如树，队列，栈等数据结构都是在它们的基础上逻辑抽象而来。
+HashMap的底层是数组+链表。数组被分为一个个桶，通过哈希值决定了键值对在这个数组的寻址；哈希值相同的键值对，则以链表形式存储，如果链表大小超过阈值(8)，会将链表转成红黑树存储。
+/** *该表在首次使用时初始化，并调整为 * 必要的。 分配时，长度始终是2的幂。 *（我们在某些操作中也允许长度为零，以允许 *当前不需要的引导机制。） */ transient Node<K,V>[] table; transient Set<Map.Entry<K,V>> entrySet; transient int size; static class Node<K,V> implements Map.Entry<K,V> { //key的哈希值  final int hash; final K key; V value; // 下一个Node，没有则为null  Node<K,V> next; Node(int hash, K key, V value, Node<K,V> next) { this.hash = hash; this.key = key; this.value = value; this.next = next; } } 可以看出，HashMap底层是table数组，数组里面的值是Entry<Key, value>。
+在HashMap类中还定义了几个静态常量，这几个常量是一些很重要的属性，源码如下：
+public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneable, Serializable { /** * HashMap的默认初始容量大小 16 */ static final int DEFAULT_INITIAL_CAPACITY = 1 << 4; // aka 16  /** * HashMap的最大容量 2的30次方 */ static final int MAXIMUM_CAPACITY = 1 << 30; /** * 负载因子，代表了table的填充度有多少，默认是0."><meta property="og:type" content="article"><meta property="og:url" content="https://wzliy.github.io/posts/hashmap/"><meta property="article:section" content="posts"><meta property="article:published_time" content="2021-04-13T09:00:00+08:00"><meta property="article:modified_time" content="2021-04-13T09:00:00+08:00"><meta name=twitter:card content="summary"><meta name=twitter:title content="HashMap底层原理"><meta name=twitter:description content="HashMap的底层原理
+数据结构中，物理存储的数据结构只有两种，即数组和链表，其余的如树，队列，栈等数据结构都是在它们的基础上逻辑抽象而来。
+HashMap的底层是数组+链表。数组被分为一个个桶，通过哈希值决定了键值对在这个数组的寻址；哈希值相同的键值对，则以链表形式存储，如果链表大小超过阈值(8)，会将链表转成红黑树存储。
+/** *该表在首次使用时初始化，并调整为 * 必要的。 分配时，长度始终是2的幂。 *（我们在某些操作中也允许长度为零，以允许 *当前不需要的引导机制。） */ transient Node<K,V>[] table; transient Set<Map.Entry<K,V>> entrySet; transient int size; static class Node<K,V> implements Map.Entry<K,V> { //key的哈希值  final int hash; final K key; V value; // 下一个Node，没有则为null  Node<K,V> next; Node(int hash, K key, V value, Node<K,V> next) { this.hash = hash; this.key = key; this.value = value; this.next = next; } } 可以看出，HashMap底层是table数组，数组里面的值是Entry<Key, value>。
+在HashMap类中还定义了几个静态常量，这几个常量是一些很重要的属性，源码如下：
+public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneable, Serializable { /** * HashMap的默认初始容量大小 16 */ static final int DEFAULT_INITIAL_CAPACITY = 1 << 4; // aka 16  /** * HashMap的最大容量 2的30次方 */ static final int MAXIMUM_CAPACITY = 1 << 30; /** * 负载因子，代表了table的填充度有多少，默认是0."><meta name=application-name content="arvin's blog"><meta name=apple-mobile-web-app-title content="arvin's blog"><link rel="shortcut icon" type=image/x-icon href=/favicon.ico><link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png><link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png><link rel=manifest href=/site.webmanifest><link rel=canonical href=https://wzliy.github.io/posts/hashmap/><link rel=prev href=https://wzliy.github.io/posts/mysql/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/style.min.css><link rel=stylesheet href=/lib/fontawesome-free/all.min.css><link rel=stylesheet href=/lib/animate/animate.min.css><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"HashMap底层原理","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/wzliy.github.io\/posts\/hashmap\/"},"genre":"posts","wordcount":849,"url":"https:\/\/wzliy.github.io\/posts\/hashmap\/","datePublished":"2021-04-13T09:00:00+08:00","dateModified":"2021-04-13T09:00:00+08:00","publisher":{"@type":"Organization","name":"arvin"},"author":{"@type":"Person","name":"arvin"},"description":""}</script></head><body header-desktop header-mobile><script type=text/javascript>(window.localStorage&&localStorage.getItem('theme')?localStorage.getItem('theme')==='dark':''==='auto'?window.matchMedia('(prefers-color-scheme: dark)').matches:''==='dark')&&document.body.setAttribute('theme','dark')</script><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title="arvin's blog">arvin's blog</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/>文章 </a><a class=menu-item href=/tags/>标签 </a><a class=menu-item href=/categories/>分类 </a><span class="menu-item delimiter"></span><a href=javascript:void(0); class="menu-item theme-switch" title=切换主题><i class="fas fa-adjust fa-fw"></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title="arvin's blog">arvin's blog</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><a class=menu-item href=/posts/ title>文章</a><a class=menu-item href=/tags/ title>标签</a><a class=menu-item href=/categories/ title>分类</a><a href=javascript:void(0); class="menu-item theme-switch" title=切换主题>
+<i class="fas fa-adjust fa-fw"></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>目录</h2><div class=toc-content id=toc-content-auto></div></div><article class="page single"><h1 class="single-title animated flipInX">HashMap底层原理</h1><div class=post-meta><div class=post-meta-line><span class=post-author><a href=/ title=Author rel=" author" class=author><i class="fas fa-user-circle fa-fw"></i>arvin</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2021-04-13>2021-04-13</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 849 字&nbsp;
+<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 4 分钟&nbsp;</div></div><div class="details toc" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span><i class="details-icon fas fa-angle-right"></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents></nav></div></div><div class=content id=content><p><strong>HashMap的底层原理</strong></p><p>数据结构中，物理存储的数据结构只有两种，即数组和链表，其余的如树，队列，栈等数据结构都是在它们的基础上逻辑抽象而来。</p><p>HashMap的底层是数组+链表。数组被分为一个个桶，通过哈希值决定了键值对在这个数组的寻址；哈希值相同的键值对，则以链表形式存储，如果链表大小超过阈值(8)，会将链表转成红黑树存储。</p><div class=highlight><pre class=chroma><code class=language-java data-lang=java>    <span class=cm>/**
+</span><span class=cm>      *该表在首次使用时初始化，并调整为
+</span><span class=cm>      * 必要的。 分配时，长度始终是2的幂。
+</span><span class=cm>      *（我们在某些操作中也允许长度为零，以允许
+</span><span class=cm>      *当前不需要的引导机制。）
+</span><span class=cm>      */</span>
+    <span class=kd>transient</span> <span class=n>Node</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;[]</span> <span class=n>table</span><span class=o>;</span>
+
+    <span class=kd>transient</span> <span class=n>Set</span><span class=o>&lt;</span><span class=n>Map</span><span class=o>.</span><span class=na>Entry</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;&gt;</span> <span class=n>entrySet</span><span class=o>;</span>
+
+    
+    <span class=kd>transient</span> <span class=kt>int</span> <span class=n>size</span><span class=o>;</span>
+
+    <span class=kd>static</span> <span class=kd>class</span> <span class=nc>Node</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;</span> <span class=kd>implements</span> <span class=n>Map</span><span class=o>.</span><span class=na>Entry</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;</span> <span class=o>{</span>
+        <span class=c1>//key的哈希值
+</span><span class=c1></span>        <span class=kd>final</span> <span class=kt>int</span> <span class=n>hash</span><span class=o>;</span>
+        <span class=kd>final</span> <span class=n>K</span> <span class=n>key</span><span class=o>;</span>
+        <span class=n>V</span> <span class=n>value</span><span class=o>;</span>
+        <span class=c1>// 下一个Node，没有则为null
+</span><span class=c1></span>        <span class=n>Node</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;</span> <span class=n>next</span><span class=o>;</span>
+
+        <span class=n>Node</span><span class=o>(</span><span class=kt>int</span> <span class=n>hash</span><span class=o>,</span> <span class=n>K</span> <span class=n>key</span><span class=o>,</span> <span class=n>V</span> <span class=n>value</span><span class=o>,</span> <span class=n>Node</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;</span> <span class=n>next</span><span class=o>)</span> <span class=o>{</span>
+            <span class=k>this</span><span class=o>.</span><span class=na>hash</span> <span class=o>=</span> <span class=n>hash</span><span class=o>;</span>
+            <span class=k>this</span><span class=o>.</span><span class=na>key</span> <span class=o>=</span> <span class=n>key</span><span class=o>;</span>
+            <span class=k>this</span><span class=o>.</span><span class=na>value</span> <span class=o>=</span> <span class=n>value</span><span class=o>;</span>
+            <span class=k>this</span><span class=o>.</span><span class=na>next</span> <span class=o>=</span> <span class=n>next</span><span class=o>;</span>
+        <span class=o>}</span>
+    <span class=o>}</span>
+</code></pre></div><p>可以看出，HashMap底层是table数组，数组里面的值是Entry&lt;Key, value>。</p><p>在HashMap类中还定义了几个静态常量，这几个常量是一些很重要的属性，源码如下：</p><div class=highlight><pre class=chroma><code class=language-java data-lang=java><span class=kd>public</span> <span class=kd>class</span> <span class=nc>HashMap</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;</span> <span class=kd>extends</span> <span class=n>AbstractMap</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;</span> 
+	<span class=kd>implements</span> <span class=n>Map</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;,</span> <span class=n>Cloneable</span><span class=o>,</span> <span class=n>Serializable</span> <span class=o>{</span>
+
+	 <span class=cm>/**
+</span><span class=cm>     * HashMap的默认初始容量大小 16
+</span><span class=cm>     */</span>
+    <span class=kd>static</span> <span class=kd>final</span> <span class=kt>int</span> <span class=n>DEFAULT_INITIAL_CAPACITY</span> <span class=o>=</span> <span class=n>1</span> <span class=o>&lt;&lt;</span> <span class=n>4</span><span class=o>;</span> <span class=c1>// aka 16
+</span><span class=c1></span>
+    <span class=cm>/**
+</span><span class=cm>     * HashMap的最大容量 2的30次方
+</span><span class=cm>     */</span>
+    <span class=kd>static</span> <span class=kd>final</span> <span class=kt>int</span> <span class=n>MAXIMUM_CAPACITY</span> <span class=o>=</span> <span class=n>1</span> <span class=o>&lt;&lt;</span> <span class=n>30</span><span class=o>;</span>
+
+    <span class=cm>/**
+</span><span class=cm>     * 负载因子，代表了table的填充度有多少，默认是0.75。当数组中的数据大于总长度的0.75倍时
+</span><span class=cm>     * HashMap会自动扩容，默认扩容到原长度的两倍。
+</span><span class=cm>     */</span>
+    <span class=kd>static</span> <span class=kd>final</span> <span class=kt>float</span> <span class=n>DEFAULT_LOAD_FACTOR</span> <span class=o>=</span> <span class=n>0</span><span class=o>.</span><span class=na>75f</span><span class=o>;</span>
+
+    <span class=cm>/**
+</span><span class=cm>     * 默认阈值，当桶(bucket)上的链表长度大于这个值时会转成红黑树，put方法的代码里有用到
+</span><span class=cm>     * 在jdk1.7中链表就是普通的单向链表，很多数据出现哈希碰撞导致这些数据集中在某一个哈希桶上，
+</span><span class=cm>     * 因而导致链表很长，会出现效率问题，jdk1.8对此做了优化，默认当链表长度大于8时转化为红黑树
+</span><span class=cm>     */</span>
+    <span class=kd>static</span> <span class=kd>final</span> <span class=kt>int</span> <span class=n>TREEIFY_THRESHOLD</span> <span class=o>=</span> <span class=n>8</span><span class=o>;</span>
+    
+    <span class=cm>/**
+</span><span class=cm>     * 和上一个的阈值相对的阈值，当桶(bucket)上的链表长度小于这个值时红黑树退化成链表
+</span><span class=cm>     */</span>
+    <span class=kd>static</span> <span class=kd>final</span> <span class=kt>int</span> <span class=n>UNTREEIFY_THRESHOLD</span> <span class=o>=</span> <span class=n>6</span><span class=o>;</span>
+    
+    <span class=cm>/**
+</span><span class=cm>     * 用于快速失败，由于HashMap非线程安全，在对HashMap进行迭代时，如果期间其他线程的参与导致HashMap      
+</span><span class=cm>     * 的结构发生变化了（比如put，remove等操作），需要抛出异常ConcurrentModificationException
+</span><span class=cm>     */</span>
+    <span class=kd>transient</span> <span class=kt>int</span> <span class=n>modCount</span><span class=o>;</span>
+    
+
+<span class=o>}</span>
+</code></pre></div><p><strong>HashMap的重要方法</strong></p><ol><li>Put方法</li></ol><div class=highlight><pre class=chroma><code class=language-java data-lang=java><span class=kd>public</span> <span class=n>V</span> <span class=nf>put</span><span class=o>(</span><span class=n>K</span> <span class=n>key</span><span class=o>,</span> <span class=n>V</span> <span class=n>value</span><span class=o>)</span> <span class=o>{</span>
+    <span class=k>return</span> <span class=n>putVal</span><span class=o>(</span><span class=n>hash</span><span class=o>(</span><span class=n>key</span><span class=o>),</span> <span class=n>key</span><span class=o>,</span> <span class=n>value</span><span class=o>,</span> <span class=kc>false</span><span class=o>,</span> <span class=kc>true</span><span class=o>);</span>
+<span class=o>}</span>
+</code></pre></div><p>我们注意到有个Hash(key)方法，为什么不用key本身的HashCode，而是来自于HashMap内部的一个Hash方法呢？</p><p>这是因为有些数据计算出的哈希值差异主要在高位，而 HashMap 里的哈希寻址是忽略容量以上的高位的，那么这种处理就可以有效避免类似情况下的哈希碰撞。</p><div class=highlight><pre class=chroma><code class=language-java data-lang=java><span class=kd>static</span> <span class=kd>final</span> <span class=kt>int</span> <span class=nf>hash</span><span class=o>(</span><span class=n>Object</span> <span class=n>key</span><span class=o>)</span> <span class=o>{</span>
+    <span class=kt>int</span> <span class=n>h</span><span class=o>;</span>
+    <span class=k>return</span> <span class=o>(</span><span class=n>key</span> <span class=o>==</span> <span class=kc>null</span><span class=o>)</span> <span class=o>?</span> <span class=n>0</span> <span class=o>:</span> <span class=o>(</span><span class=n>h</span> <span class=o>=</span> <span class=n>key</span><span class=o>.</span><span class=na>hashCode</span><span class=o>())</span> <span class=o>^</span> <span class=o>(</span><span class=n>h</span> <span class=o>&gt;&gt;&gt;</span> <span class=n>16</span><span class=o>);</span>
+<span class=o>}</span>
+</code></pre></div><p>首先，key的hashCode方法，会得到一个二进制的散列值，这个值的范围在就是int的取值范围，在-2的31次方到2的31次方-1，这个范围太大，肯定不能用来当做Hash的table数组的下标来计算，所以，为了从hash值转换到数组下标，需要进行取模运算，比如hash值 除以数组长度，取它的余数，这个余数就能表示计算出的数组下标会落到数组长度的范围内。</p><p>取模运算</p><div class=highlight><pre class=chroma><code class=language-java data-lang=java><span class=kd>static</span> <span class=kt>int</span> <span class=nf>indexFor</span><span class=o>(</span><span class=kt>int</span> <span class=n>h</span><span class=o>,</span> <span class=kt>int</span> <span class=n>length</span><span class=o>)</span> <span class=o>{</span>
+    <span class=k>return</span> <span class=n>h</span> <span class=o>&amp;</span> <span class=o>(</span><span class=n>length</span><span class=o>-</span><span class=n>1</span><span class=o>);</span>
+<span class=o>}</span>
+</code></pre></div><p>取模运算可以通过与2的幂次-1进行与运算得到</p><div class=highlight><pre class=chroma><code class=language-java data-lang=java><span class=c1>// 比如有一个hashcode的值是3556498 ，数组长度为16，对16进行取模运算
+</span><span class=c1></span><span class=n>3556498</span> <span class=o>%</span> <span class=n>16</span> <span class=o>=</span> <span class=n>2</span><span class=o>;</span>
+<span class=c1>// 还可以通过&amp;运算得到
+</span><span class=c1></span><span class=n>3556498</span> <span class=o>&amp;</span> <span class=o>(</span><span class=n>16</span><span class=o>-</span><span class=n>1</span><span class=o>)</span> <span class=o>=</span> <span class=n>2</span>
+</code></pre></div><p>所以，这也是为什么数组容量一般要求设置为2的幂次方，能更方便的通过hashcode计算出数组下标。</p><p>说回到刚刚那个问题，那为什么HashMap内部又要重新计算hash呢，不直接使用这个key本身的HashCode。</p><p>我们先看下这个&运算</p><div class=highlight><pre class=chroma><code class=language-js data-lang=js>    <span class=mi>10100101</span> <span class=mi>11000100</span> <span class=mi>00100101</span>
+<span class=o>&amp;</span>	<span class=mi>00000000</span> <span class=mi>00000000</span> <span class=mi>00001111</span>
+<span class=o>----------------------------------</span>
+	<span class=mi>00000000</span> <span class=mi>00000000</span> <span class=mi>00000101</span>    <span class=c1>//高位全部归零，只保留末四位
+</span></code></pre></div><p>可以看到，&运算时，忽略了hashcode高位数的值，只取最后几位，所以，就算散列值分布再松散，碰撞也会很严重。</p><p>这时候，”扰动函数“的价值就体现出来了</p><p><img class=lazyload src=/svg/loading.min.svg data-src="https://pic4.zhimg.com/80/4acf898694b8fb53498542dc0c5f765a_720w.jpg?source=1940ef5c" data-srcset="https://pic4.zhimg.com/80/4acf898694b8fb53498542dc0c5f765a_720w.jpg?source=1940ef5c, https://pic4.zhimg.com/80/4acf898694b8fb53498542dc0c5f765a_720w.jpg?source=1940ef5c 1.5x, https://pic4.zhimg.com/80/4acf898694b8fb53498542dc0c5f765a_720w.jpg?source=1940ef5c 2x" data-sizes=auto alt="https://pic4.zhimg.com/80/4acf898694b8fb53498542dc0c5f765a_720w.jpg?source=1940ef5c" title=img></p><p>也就是HashMap内部的hash方法，将hashCode右移16位，与它本身进行异或运算，重新得到hash值，右位移16位，正好是32bit的一半，自己的高半区和低半区做异或，就是为了混合原始哈希码的高位和低位，以此来加大低位的随机性。而且混合后的低位掺杂了高位的部分特征，这样高位的信息也被变相保留下来。</p><p>这也就是 <strong>HashMap 里的哈希寻址是忽略容量以上的高位的，这种处理就可以有效避免类似情况下的哈希碰撞</strong>，这句话的意思。</p><div class=highlight><pre class=chroma><code class=language-java data-lang=java><span class=kd>final</span> <span class=n>V</span> <span class=nf>putVal</span><span class=o>(</span><span class=kt>int</span> <span class=n>hash</span><span class=o>,</span> <span class=n>K</span> <span class=n>key</span><span class=o>,</span> <span class=n>V</span> <span class=n>value</span><span class=o>,</span> <span class=kt>boolean</span> <span class=n>onlyIfAbsent</span><span class=o>,</span>
+               <span class=kt>boolean</span> <span class=n>evict</span><span class=o>)</span> <span class=o>{</span>
+    <span class=n>Node</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;[]</span> <span class=n>tab</span><span class=o>;</span> 
+    <span class=n>Node</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;</span> <span class=n>p</span><span class=o>;</span> 
+    <span class=kt>int</span> <span class=n>n</span><span class=o>,</span> <span class=n>i</span><span class=o>;</span>
+    <span class=c1>// 如果table数组是空的，创建一个初始数组
+</span><span class=c1></span>    <span class=k>if</span> <span class=o>((</span><span class=n>tab</span> <span class=o>=</span> <span class=n>table</span><span class=o>)</span> <span class=o>==</span> <span class=kc>null</span> <span class=o>||</span> <span class=o>(</span><span class=n>n</span> <span class=o>=</span> <span class=n>tab</span><span class=o>.</span><span class=na>length</span><span class=o>)</span> <span class=o>==</span> <span class=n>0</span><span class=o>)</span>
+        <span class=n>n</span> <span class=o>=</span> <span class=o>(</span><span class=n>tab</span> <span class=o>=</span> <span class=n>resize</span><span class=o>()).</span><span class=na>length</span><span class=o>;</span>
+    
+    <span class=c1>// n是table长度,根据数组长度和key的哈希值，定位当前key在table中的下标位置,如果为空则新建一个node。不为空走else
+</span><span class=c1></span>    <span class=k>if</span> <span class=o>((</span><span class=n>p</span> <span class=o>=</span> <span class=n>tab</span><span class=o>[</span><span class=n>i</span> <span class=o>=</span> <span class=o>(</span><span class=n>n</span> <span class=o>-</span> <span class=n>1</span><span class=o>)</span> <span class=o>&amp;</span> <span class=n>hash</span><span class=o>])</span> <span class=o>==</span> <span class=kc>null</span><span class=o>)</span>
+        <span class=n>tab</span><span class=o>[</span><span class=n>i</span><span class=o>]</span> <span class=o>=</span> <span class=n>newNode</span><span class=o>(</span><span class=n>hash</span><span class=o>,</span> <span class=n>key</span><span class=o>,</span> <span class=n>value</span><span class=o>,</span> <span class=kc>null</span><span class=o>);</span>
+    <span class=k>else</span> <span class=o>{</span>
+        <span class=n>Node</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;</span> <span class=n>e</span><span class=o>;</span> <span class=n>K</span> <span class=n>k</span><span class=o>;</span>
+        <span class=k>if</span> <span class=o>(</span><span class=n>p</span><span class=o>.</span><span class=na>hash</span> <span class=o>==</span> <span class=n>hash</span> <span class=o>&amp;&amp;</span>
+            <span class=o>((</span><span class=n>k</span> <span class=o>=</span> <span class=n>p</span><span class=o>.</span><span class=na>key</span><span class=o>)</span> <span class=o>==</span> <span class=n>key</span> <span class=o>||</span> <span class=o>(</span><span class=n>key</span> <span class=o>!=</span> <span class=kc>null</span> <span class=o>&amp;&amp;</span> <span class=n>key</span><span class=o>.</span><span class=na>equals</span><span class=o>(</span><span class=n>k</span><span class=o>))))</span>
+            <span class=n>e</span> <span class=o>=</span> <span class=n>p</span><span class=o>;</span>
+        <span class=k>else</span> <span class=k>if</span> <span class=o>(</span><span class=n>p</span> <span class=k>instanceof</span> <span class=n>TreeNode</span><span class=o>)</span>
+            <span class=n>e</span> <span class=o>=</span> <span class=o>((</span><span class=n>TreeNode</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;)</span><span class=n>p</span><span class=o>).</span><span class=na>putTreeVal</span><span class=o>(</span><span class=k>this</span><span class=o>,</span> <span class=n>tab</span><span class=o>,</span> <span class=n>hash</span><span class=o>,</span> <span class=n>key</span><span class=o>,</span> <span class=n>value</span><span class=o>);</span>
+        <span class=k>else</span> <span class=o>{</span>
+            <span class=k>for</span> <span class=o>(</span><span class=kt>int</span> <span class=n>binCount</span> <span class=o>=</span> <span class=n>0</span><span class=o>;</span> <span class=o>;</span> <span class=o>++</span><span class=n>binCount</span><span class=o>)</span> <span class=o>{</span>
+                <span class=k>if</span> <span class=o>((</span><span class=n>e</span> <span class=o>=</span> <span class=n>p</span><span class=o>.</span><span class=na>next</span><span class=o>)</span> <span class=o>==</span> <span class=kc>null</span><span class=o>)</span> <span class=o>{</span>
+                    <span class=n>p</span><span class=o>.</span><span class=na>next</span> <span class=o>=</span> <span class=n>newNode</span><span class=o>(</span><span class=n>hash</span><span class=o>,</span> <span class=n>key</span><span class=o>,</span> <span class=n>value</span><span class=o>,</span> <span class=kc>null</span><span class=o>);</span>
+                    <span class=k>if</span> <span class=o>(</span><span class=n>binCount</span> <span class=o>&gt;=</span> <span class=n>TREEIFY_THRESHOLD</span> <span class=o>-</span> <span class=n>1</span><span class=o>)</span> <span class=c1>// -1 for 1st
+</span><span class=c1></span>                        <span class=n>treeifyBin</span><span class=o>(</span><span class=n>tab</span><span class=o>,</span> <span class=n>hash</span><span class=o>);</span>
+                    <span class=k>break</span><span class=o>;</span>
+                <span class=o>}</span>
+                <span class=k>if</span> <span class=o>(</span><span class=n>e</span><span class=o>.</span><span class=na>hash</span> <span class=o>==</span> <span class=n>hash</span> <span class=o>&amp;&amp;</span>
+                    <span class=o>((</span><span class=n>k</span> <span class=o>=</span> <span class=n>e</span><span class=o>.</span><span class=na>key</span><span class=o>)</span> <span class=o>==</span> <span class=n>key</span> <span class=o>||</span> <span class=o>(</span><span class=n>key</span> <span class=o>!=</span> <span class=kc>null</span> <span class=o>&amp;&amp;</span> <span class=n>key</span><span class=o>.</span><span class=na>equals</span><span class=o>(</span><span class=n>k</span><span class=o>))))</span>
+                    <span class=k>break</span><span class=o>;</span>
+                <span class=n>p</span> <span class=o>=</span> <span class=n>e</span><span class=o>;</span>
+            <span class=o>}</span>
+        <span class=o>}</span>
+        <span class=k>if</span> <span class=o>(</span><span class=n>e</span> <span class=o>!=</span> <span class=kc>null</span><span class=o>)</span> <span class=o>{</span> <span class=c1>// existing mapping for key
+</span><span class=c1></span>            <span class=n>V</span> <span class=n>oldValue</span> <span class=o>=</span> <span class=n>e</span><span class=o>.</span><span class=na>value</span><span class=o>;</span>
+            <span class=k>if</span> <span class=o>(!</span><span class=n>onlyIfAbsent</span> <span class=o>||</span> <span class=n>oldValue</span> <span class=o>==</span> <span class=kc>null</span><span class=o>)</span>
+                <span class=n>e</span><span class=o>.</span><span class=na>value</span> <span class=o>=</span> <span class=n>value</span><span class=o>;</span>
+            <span class=n>afterNodeAccess</span><span class=o>(</span><span class=n>e</span><span class=o>);</span>
+            <span class=k>return</span> <span class=n>oldValue</span><span class=o>;</span>
+        <span class=o>}</span>
+    <span class=o>}</span>
+    <span class=o>++</span><span class=n>modCount</span><span class=o>;</span>
+    <span class=k>if</span> <span class=o>(++</span><span class=n>size</span> <span class=o>&gt;</span> <span class=n>threshold</span><span class=o>)</span>
+        <span class=n>resize</span><span class=o>();</span>
+    <span class=n>afterNodeInsertion</span><span class=o>(</span><span class=n>evict</span><span class=o>);</span>
+    <span class=k>return</span> <span class=kc>null</span><span class=o>;</span>
+<span class=o>}</span>
+</code></pre></div><p>简单归纳下HashMap的put流程：</p><ol><li>初次put，初始化table数组，默认容量16</li><li>根据数组长度和key的哈希值，定位当前key在table中的位置</li><li>如果table中为空，则新建一个Node</li><li>如果table中不为空，判断当前的key与table中索引所在的头节点的key相等，且hash值一致，则把新的node替换掉旧的node</li><li>如果头节点不是空，且头节点的类型是树节点类型，则把当前节点插入当前头节点所在的树中</li><li>否则，遍历链表，将当前节点加入到链表中，如果链表长度大于或等于默认值8，则把链表转化为红黑树</li><li>如果老节点不为空，则将老节点的值替换成新值，并返回老的值</li><li>判断当前数组长度大于临界阈值，则调用resize方法进行扩容</li></ol><p>首先，我们注意到有个resize()方法，这个方法主要负责：</p><ul><li>如果表格为null, resize方法会负责初始化它。</li><li>在容量不满足的需求的时候，进行扩容(resize)</li></ul><ol><li>table为null时，初始化table</li></ol><div class=highlight><pre class=chroma><code class=language-java data-lang=java><span class=kd>final</span> <span class=n>Node</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;[]</span> <span class=nf>resize</span><span class=o>()</span> <span class=o>{</span>
+    <span class=n>Node</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;[]</span> <span class=n>oldTab</span> <span class=o>=</span> <span class=n>table</span><span class=o>;</span>
+    <span class=kt>int</span> <span class=n>oldCap</span> <span class=o>=</span> <span class=o>(</span><span class=n>oldTab</span> <span class=o>==</span> <span class=kc>null</span><span class=o>)</span> <span class=o>?</span> <span class=n>0</span> <span class=o>:</span> <span class=n>oldTab</span><span class=o>.</span><span class=na>length</span><span class=o>;</span>
+    <span class=kt>int</span> <span class=n>oldThr</span> <span class=o>=</span> <span class=n>threshold</span><span class=o>;</span>
+    <span class=kt>int</span> <span class=n>newCap</span><span class=o>,</span> <span class=n>newThr</span> <span class=o>=</span> <span class=n>0</span><span class=o>;</span>
+    <span class=k>if</span> <span class=o>(</span><span class=n>oldCap</span> <span class=o>&gt;</span> <span class=n>0</span><span class=o>)</span> <span class=o>{</span>
+            <span class=c1>// ...
+</span><span class=c1></span>    <span class=o>}</span>
+    <span class=k>else</span> <span class=k>if</span> <span class=o>(</span><span class=n>oldThr</span> <span class=o>&gt;</span> <span class=n>0</span><span class=o>)</span> <span class=c1>// initial capacity was placed in threshold
+</span><span class=c1></span>        <span class=c1>// ...
+</span><span class=c1></span>    <span class=k>else</span> <span class=o>{</span>               <span class=c1>// 0初始阈值表示使用默认值 
+</span><span class=c1></span>        <span class=n>newCap</span> <span class=o>=</span> <span class=n>DEFAULT_INITIAL_CAPACITY</span><span class=o>;</span>
+        <span class=n>newThr</span> <span class=o>=</span> <span class=o>(</span><span class=kt>int</span><span class=o>)(</span><span class=n>DEFAULT_LOAD_FACTOR</span> <span class=o>*</span> <span class=n>DEFAULT_INITIAL_CAPACITY</span><span class=o>);</span>
+    <span class=o>}</span>
+    <span class=k>if</span> <span class=o>(</span><span class=n>newThr</span> <span class=o>==</span> <span class=n>0</span><span class=o>)</span> <span class=o>{</span>
+        <span class=c1>// ...
+</span><span class=c1></span>    <span class=o>}</span>
+    <span class=n>threshold</span> <span class=o>=</span> <span class=n>newThr</span><span class=o>;</span>
+    <span class=nd>@SuppressWarnings</span><span class=o>({</span><span class=s>&#34;rawtypes&#34;</span><span class=o>,</span><span class=s>&#34;unchecked&#34;</span><span class=o>})</span>
+    <span class=n>Node</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;[]</span> <span class=n>newTab</span> <span class=o>=</span> <span class=o>(</span><span class=n>Node</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;[])</span><span class=k>new</span> <span class=n>Node</span><span class=o>[</span><span class=n>newCap</span><span class=o>];</span>
+    <span class=n>table</span> <span class=o>=</span> <span class=n>newTab</span><span class=o>;</span>
+    <span class=k>if</span> <span class=o>(</span><span class=n>oldTab</span> <span class=o>!=</span> <span class=kc>null</span><span class=o>)</span> <span class=o>{</span>
+        <span class=c1>// ...
+</span><span class=c1></span>    <span class=o>}</span>
+    <span class=k>return</span> <span class=n>newTab</span><span class=o>;</span>
+
+<span class=o>}</span>
+</code></pre></div><p>初始化table使用默认值，DEFAULT_INITIAL_CAPACITY = 16，DEFAULT_LOAD_FACTOR = 0.75f, newThr = 16*0.75 = 12</p><ol start=2><li>扩容</li></ol><div class=highlight><pre class=chroma><code class=language-java data-lang=java>
+<span class=kd>final</span> <span class=n>Node</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;[]</span> <span class=nf>resize</span><span class=o>()</span> <span class=o>{</span>
+    
+    <span class=c1>// ...
+</span><span class=c1></span>    <span class=c1>//oldCap---原hashMap的最大容量,oldThr---原hashMap的负载容量
+</span><span class=c1></span>	<span class=kt>int</span> <span class=n>oldCap</span> <span class=o>=</span> <span class=o>(</span><span class=n>oldTab</span> <span class=o>==</span> <span class=kc>null</span><span class=o>)</span> <span class=o>?</span> <span class=n>0</span> <span class=o>:</span> <span class=n>oldTab</span><span class=o>.</span><span class=na>length</span><span class=o>;</span>
+    <span class=k>if</span> <span class=o>(</span><span class=n>oldCap</span> <span class=o>&gt;</span> <span class=n>0</span><span class=o>)</span> <span class=o>{</span>
+		<span class=k>if</span> <span class=o>(</span><span class=n>oldCap</span> <span class=o>&gt;=</span> <span class=n>MAXIMUM_CAPACITY</span><span class=o>)</span> <span class=o>{</span>
+			<span class=n>threshold</span> <span class=o>=</span> <span class=n>Integer</span><span class=o>.</span><span class=na>MAX_VALUE</span><span class=o>;</span>
+			<span class=k>return</span> <span class=n>oldTab</span><span class=o>;</span>
+		<span class=o>}</span>
+		<span class=c1>//左移一位,就是将原来的容量翻倍，翻倍后的值小于2的30次方，大于原来的容量值
+</span><span class=c1></span>		<span class=k>else</span> <span class=k>if</span> <span class=o>((</span><span class=n>newCap</span> <span class=o>=</span> <span class=n>oldCap</span> <span class=o>&lt;&lt;</span> <span class=n>1</span><span class=o>)</span> <span class=o>&lt;</span> <span class=n>MAXIMUM_CAPACITY</span> <span class=o>&amp;&amp;</span>
+				 <span class=n>oldCap</span> <span class=o>&gt;=</span> <span class=n>DEFAULT_INITIAL_CAPACITY</span><span class=o>)</span>
+			<span class=c1>//原来的负载容量翻倍	 
+</span><span class=c1></span>			<span class=n>newThr</span> <span class=o>=</span> <span class=n>oldThr</span> <span class=o>&lt;&lt;</span> <span class=n>1</span><span class=o>;</span> <span class=c1>// double threshold
+</span><span class=c1></span>	<span class=o>}</span>
+    <span class=k>else</span> <span class=k>if</span> <span class=o>(</span><span class=n>oldThr</span> <span class=o>&gt;</span> <span class=n>0</span><span class=o>)</span> <span class=c1>// initial capacity was placed in threshold
+</span><span class=c1></span>        <span class=n>newCap</span> <span class=o>=</span> <span class=n>oldThr</span><span class=o>;</span>
+    <span class=k>else</span> <span class=o>{</span>  
+        <span class=c1>// ...
+</span><span class=c1></span>    <span class=o>}</span>
+    <span class=k>if</span> <span class=o>(</span><span class=n>newThr</span> <span class=o>==</span><span class=n>0</span><span class=o>)</span> <span class=o>{</span>
+        <span class=kt>float</span> <span class=n>ft</span> <span class=o>=</span> <span class=o>(</span><span class=kt>float</span><span class=o>)</span><span class=n>newCap</span> <span class=o>*</span> <span class=n>loadFator</span><span class=o>;</span>
+        <span class=n>newThr</span> <span class=o>=</span> <span class=o>(</span><span class=n>newCap</span> <span class=o>&lt;</span> <span class=n>MAXIMUM_CAPACITY</span> <span class=o>&amp;&amp;</span> <span class=n>ft</span> <span class=o>&lt;</span> <span class=o>(</span><span class=kt>float</span><span class=o>)</span><span class=n>MAXIMUM_CAPACITY</span> <span class=o>?(</span><span class=kt>int</span><span class=o>)</span><span class=n>ft</span> <span class=o>:</span> <span class=n>Integer</span><span class=o>.</span><span class=na>MAX_VALUE</span><span class=o>);</span>
+    <span class=o>}</span>
+    <span class=n>threshold</span> <span class=o>=</span> <span class=n>neThr</span><span class=o>;</span>
+    <span class=n>Node</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;[]</span> <span class=n>newTab</span> <span class=o>=</span> <span class=o>(</span><span class=n>Node</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;[])</span><span class=k>new</span> <span class=n>Node</span><span class=o>[</span><span class=n>newap</span><span class=o>];</span>
+    <span class=n>table</span> <span class=o>=</span> <span class=n>n</span><span class=err>；</span>
+    <span class=c1>// 移动到新的数组结构e数组结构 
+</span><span class=c1></span>   <span class=o>}</span>
+
+</code></pre></div><p>最后看下扩容怎么把数据转移到新的数组中</p><div class=highlight><pre class=chroma><code class=language-java data-lang=java><span class=k>if</span> <span class=o>(</span><span class=n>oldTab</span> <span class=o>!=</span> <span class=kc>null</span><span class=o>)</span> <span class=o>{</span>
+    <span class=c1>// 循环旧数组中的所有下标
+</span><span class=c1></span>    <span class=k>for</span> <span class=o>(</span><span class=kt>int</span> <span class=n>j</span> <span class=o>=</span> <span class=n>0</span><span class=o>;</span> <span class=n>j</span> <span class=o>&lt;</span> <span class=n>oldCap</span><span class=o>;</span> <span class=o>++</span><span class=n>j</span><span class=o>)</span> <span class=o>{</span>
+        <span class=n>Node</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;</span> <span class=n>e</span><span class=o>;</span>
+        <span class=c1>// 如果旧数组下标中有值，需要迁移
+</span><span class=c1></span>        <span class=k>if</span> <span class=o>((</span><span class=n>e</span> <span class=o>=</span> <span class=n>oldTab</span><span class=o>[</span><span class=n>j</span><span class=o>])</span> <span class=o>!=</span> <span class=kc>null</span><span class=o>)</span> <span class=o>{</span>
+            <span class=n>oldTab</span><span class=o>[</span><span class=n>j</span><span class=o>]</span> <span class=o>=</span> <span class=kc>null</span><span class=o>;</span>
+            
+            <span class=k>if</span> <span class=o>(</span><span class=n>e</span><span class=o>.</span><span class=na>next</span> <span class=o>==</span> <span class=kc>null</span><span class=o>)</span>
+                <span class=c1>// 如果当前数组下标的节点没有下一个节点，重新计算hash后的下标，放入新数组中
+</span><span class=c1></span>                <span class=n>newTab</span><span class=o>[</span><span class=n>e</span><span class=o>.</span><span class=na>hash</span> <span class=o>&amp;</span> <span class=o>(</span><span class=n>newCap</span> <span class=o>-</span> <span class=n>1</span><span class=o>)]</span> <span class=o>=</span> <span class=n>e</span><span class=o>;</span>
+            <span class=k>else</span> <span class=k>if</span> <span class=o>(</span><span class=n>e</span> <span class=k>instanceof</span> <span class=n>TreeNode</span><span class=o>)</span>
+                <span class=c1>// 如果当前数组下标的节点有下一个节点，且节点是红黑树的结构，另外处理
+</span><span class=c1></span>                <span class=n>newTab</span><span class=o>[</span><span class=n>e</span><span class=o>.</span><span class=na>hash</span> <span class=o>&amp;</span> <span class=o>(</span><span class=n>newCap</span> <span class=o>-</span> <span class=n>1</span><span class=o>)]</span> <span class=o>=</span> <span class=n>e</span><span class=o>;</span>
+                <span class=o>((</span><span class=n>TreeNode</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;)</span><span class=n>e</span><span class=o>).</span><span class=na>split</span><span class=o>(</span><span class=k>this</span><span class=o>,</span> <span class=n>newTab</span><span class=o>,</span> <span class=n>j</span><span class=o>,</span> <span class=n>oldCap</span><span class=o>);</span>
+            <span class=k>else</span> <span class=o>{</span> <span class=c1>// preserve order
+</span><span class=c1></span>                <span class=c1>// 最后就是当前数组下标有下一个节点，且为链表结构
+</span><span class=c1></span>                <span class=n>Node</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;</span> <span class=n>loHead</span> <span class=o>=</span> <span class=kc>null</span><span class=o>,</span> <span class=n>loTail</span> <span class=o>=</span> <span class=kc>null</span><span class=o>;</span>
+                <span class=n>Node</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;</span> <span class=n>hiHead</span> <span class=o>=</span> <span class=kc>null</span><span class=o>,</span> <span class=n>hiTail</span> <span class=o>=</span> <span class=kc>null</span><span class=o>;</span>
+                <span class=n>Node</span><span class=o>&lt;</span><span class=n>K</span><span class=o>,</span><span class=n>V</span><span class=o>&gt;</span> <span class=n>next</span><span class=o>;</span>
+                <span class=k>do</span> <span class=o>{</span>
+                    <span class=n>next</span> <span class=o>=</span> <span class=n>e</span><span class=o>.</span><span class=na>next</span><span class=o>;</span>
+                    <span class=k>if</span> <span class=o>((</span><span class=n>e</span><span class=o>.</span><span class=na>hash</span> <span class=o>&amp;</span> <span class=n>oldCap</span><span class=o>)</span> <span class=o>==</span> <span class=n>0</span><span class=o>)</span> <span class=o>{</span>
+                        <span class=k>if</span> <span class=o>(</span><span class=n>loTail</span> <span class=o>==</span> <span class=kc>null</span><span class=o>)</span>
+                            <span class=n>loHead</span> <span class=o>=</span> <span class=n>e</span><span class=o>;</span>
+                        <span class=k>else</span>
+                            <span class=n>loTail</span><span class=o>.</span><span class=na>next</span> <span class=o>=</span> <span class=n>e</span><span class=o>;</span>
+                        <span class=n>loTail</span> <span class=o>=</span> <span class=n>e</span><span class=o>;</span>
+                    <span class=o>}</span>
+                    <span class=k>else</span> <span class=o>{</span>
+                        <span class=k>if</span> <span class=o>(</span><span class=n>hiTail</span> <span class=o>==</span> <span class=kc>null</span><span class=o>)</span>
+                            <span class=n>hiHead</span> <span class=o>=</span> <span class=n>e</span><span class=o>;</span>
+                        <span class=k>else</span>
+                            <span class=n>hiTail</span><span class=o>.</span><span class=na>next</span> <span class=o>=</span> <span class=n>e</span><span class=o>;</span>
+                        <span class=n>hiTail</span> <span class=o>=</span> <span class=n>e</span><span class=o>;</span>
+                    <span class=o>}</span>
+                <span class=o>}</span> <span class=k>while</span> <span class=o>((</span><span class=n>e</span> <span class=o>=</span> <span class=n>next</span><span class=o>)</span> <span class=o>!=</span> <span class=kc>null</span><span class=o>);</span>
+                <span class=k>if</span> <span class=o>(</span><span class=n>loTail</span> <span class=o>!=</span> <span class=kc>null</span><span class=o>)</span> <span class=o>{</span>
+                    <span class=n>loTail</span><span class=o>.</span><span class=na>next</span> <span class=o>=</span> <span class=kc>null</span><span class=o>;</span>
+                    <span class=n>newTab</span><span class=o>[</span><span class=n>j</span><span class=o>]</span> <span class=o>=</span> <span class=n>loHead</span><span class=o>;</span>
+                <span class=o>}</span>
+                <span class=k>if</span> <span class=o>(</span><span class=n>hiTail</span> <span class=o>!=</span> <span class=kc>null</span><span class=o>)</span> <span class=o>{</span>
+                    <span class=n>hiTail</span><span class=o>.</span><span class=na>next</span> <span class=o>=</span> <span class=kc>null</span><span class=o>;</span>
+                    <span class=n>newTab</span><span class=o>[</span><span class=n>j</span> <span class=o>+</span> <span class=n>oldCap</span><span class=o>]</span> <span class=o>=</span> <span class=n>hiHead</span><span class=o>;</span>
+                <span class=o>}</span>
+            <span class=o>}</span>
+        <span class=o>}</span>
+    <span class=o>}</span>
+<span class=o>}</span>
+</code></pre></div><p>重点看下链表结构的数据怎么迁移的</p><p>首先定义了两类节点，一类是lohead 和loTail ,一类是 hiHead 和hiTail</p><p>head用来保存头节点，tail保存链表数据</p><p>循环处理链表节点数据</p><p>当节点数据的hash小于旧数组长度时，直接使用当前数组下标</p><p>否则，重新计算hash后的数组下标，加到新数组中</p><p><strong>树结构的转换</strong></p><p>最后还有一个重点内容就是链表数据转成红黑树，以及扩容时红黑树的数据怎么迁移</p></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2021-04-13</span></div><div class=post-info-license></div></div><div class=post-info-line><div class=post-info-md></div><div class=post-info-share><span></span></div></div></div><div class=post-info-more><section class=post-tags></section><section><span><a href=javascript:void(0); onclick=window.history.back()>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class=post-nav><a href=/posts/mysql/ class=prev rel=prev title=MySQL><i class="fas fa-angle-left fa-fw"></i>MySQL</a></div></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreffer" title="Hugo 0.81.0">Hugo</a> 强力驱动 | 主题 - <a href=https://github.com/dillonzq/LoveIt target=_blank rel="noopener noreffer" title="LoveIt 0.2.10"><i class="far fa-kiss-wink-heart fa-fw"></i>LoveIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2021</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/ target=_blank></a></span></div></div></footer></div><div id=fixed-buttons><a href=# id=back-to-top class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i></a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><script type=text/javascript src=/lib/smooth-scroll/smooth-scroll.min.js></script><script type=text/javascript src=/lib/lazysizes/lazysizes.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10},comment:{}}</script><script type=text/javascript src=/js/theme.min.js></script></body></html>
