@@ -69,7 +69,8 @@ LinkedList foo = new LinkedList(); foo.add(new Integer(123)); 变量foo是一个
 Finalizers C++允许对象定义一个清理方法：当对象脱离了作用域或被明确删除时，这个清理方法被调用用来清理其使用的资源。对于大多数对象，这意味着显式释放通过new或者malloc分配对象的任何内存。在Java中，垃圾收集器为你清理内存，因此无需明确的清理方法来处理此操作。
 但是内存并不是唯一的需要清理的资源。想想FileOutputStream: 当你创建这个对象的实例的时候，它会从操作系统分配文件句柄。如果你在关闭流之前让流的所有引用都退出作用域，该文件句柄会发生什么情况呢？答案是，流有一个Finalizer 方法：在垃圾收集器回收对象之前调用的一个方法。在这个FileOutputStream的例子中，finalizer方法关闭流，将文件句柄释放回操作系统，并冲洗任何缓冲区，确保所有数据都正确地写入磁盘。
 任何对象都可以有finalizers: 你所需要做的就是声明finalize() 方法：
-protected void finalize() throws Throwable { // cleanup your object here } 虽然finalizers似乎是一种清理自己的简单方法，但是，它们确实存在一些严重的局限性。首先，你不应该依赖他们来处理任何重要的事情，因为对象的finalizers可能永远不会被调用&ndash;应用程序可能在对象有资格进行垃圾回收之前退出。finalizers还有一些其他的更微妙的问题，稍后我们会在幻象引用的时候来讨论它。</div><div class=post-footer><a href=/posts/java%E5%BC%95%E7%94%A8%E5%AF%B9%E8%B1%A1/>阅读全文</a></div></article><article class="single summary" itemscope itemtype=http://schema.org/Article><h1 class=single-title itemprop="name headline"><a href=/posts/%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B/>引用类型</a></h1><div class=post-meta><span class=post-author><a href=/ title=Author rel=" author" class=author><i class="fas fa-user-circle fa-fw"></i>arvin</a></span>&nbsp;<span class=post-publish>发布于 <time datetime=2021-03-28>2021-03-28</time></span></div><div class=content>Java的引用类型分为四种：强引用，弱引用，软引用，幻象引用。</div><div class=post-footer><a href=/posts/%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B/>阅读全文</a></div></article><article class="single summary" itemscope itemtype=http://schema.org/Article><h1 class=single-title itemprop="name headline"><a href=/posts/kafka%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E6%88%98/></a></h1><div class=post-meta><span class=post-author><a href=/ title=Author rel=" author" class=author><i class="fas fa-user-circle fa-fw"></i>作者</a></span>&nbsp;<span class=post-publish>发布于 <time datetime=0001-01-01>0001-01-01</time></span></div><div class=content>Kafka入门 Kafka的概念与术语 主题（Topic）
+protected void finalize() throws Throwable { // cleanup your object here } 虽然finalizers似乎是一种清理自己的简单方法，但是，它们确实存在一些严重的局限性。首先，你不应该依赖他们来处理任何重要的事情，因为对象的finalizers可能永远不会被调用&ndash;应用程序可能在对象有资格进行垃圾回收之前退出。finalizers还有一些其他的更微妙的问题，稍后我们会在幻象引用的时候来讨论它。</div><div class=post-footer><a href=/posts/java%E5%BC%95%E7%94%A8%E5%AF%B9%E8%B1%A1/>阅读全文</a></div></article><article class="single summary" itemscope itemtype=http://schema.org/Article><h1 class=single-title itemprop="name headline"><a href=/posts/%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B/>引用类型</a></h1><div class=post-meta><span class=post-author><a href=/ title=Author rel=" author" class=author><i class="fas fa-user-circle fa-fw"></i>arvin</a></span>&nbsp;<span class=post-publish>发布于 <time datetime=2021-03-28>2021-03-28</time></span></div><div class=content>Java的引用类型分为四种：强引用，弱引用，软引用，幻象引用。</div><div class=post-footer><a href=/posts/%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B/>阅读全文</a></div></article><article class="single summary" itemscope itemtype=http://schema.org/Article><h1 class=single-title itemprop="name headline"><a href=/posts/docker/></a></h1><div class=post-meta><span class=post-author><a href=/ title=Author rel=" author" class=author><i class="fas fa-user-circle fa-fw"></i>作者</a></span>&nbsp;<span class=post-publish>发布于 <time datetime=0001-01-01>0001-01-01</time></span></div><div class=content>Docker Compose Compose项目是 Docker 官方的开源项目，负责实现对 Docker 容器集群的快速编排。
+定义和运行多个 Docker 容器的应用（Defining and running multi-container Docker applications）。</div><div class=post-footer><a href=/posts/docker/>阅读全文</a></div></article><article class="single summary" itemscope itemtype=http://schema.org/Article><h1 class=single-title itemprop="name headline"><a href=/posts/kafka%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E6%88%98/></a></h1><div class=post-meta><span class=post-author><a href=/ title=Author rel=" author" class=author><i class="fas fa-user-circle fa-fw"></i>作者</a></span>&nbsp;<span class=post-publish>发布于 <time datetime=0001-01-01>0001-01-01</time></span></div><div class=content>Kafka入门 Kafka的概念与术语 主题（Topic）
 发布订阅的对象是主题。你可以为每个业务、每个应用甚至是每类数据都创建专属的主题。
 生产者（Producer）
 向主题发布消息的客户端应用程序称为生产者（Producer），生产者程序通常持续不断地向一个或多个主题发送消息。
@@ -84,29 +85,58 @@ Kafka 的服务器端由被称为 Broker 的服务进程构成，即一个 Kafka
 Kafka 定义了两类副本：领导者副本（Leader Replica）和追随者副本（Follower Replica）。前者对外提供服务，这里的对外指的是与客户端程序进行交互；而后者只是被动地追随领导者副本而已，不能与外界进行交互。
 副本的工作机制很简单：生产者总是向领导者副本写消息；而消费者总是从领导者副本读消息。至于追随者副本，它只做一件事：就是向领导者副本发送请求，请求领导者把最新生产的消息发给它，这样它能保持与领导者同步。
 分区
-虽然有了副本机制可以保证数据的持久化或消息不丢失，但没有解决伸缩性的问题。为了解决这个问题，Kafka设计了分区机制。Kafka 中的分区机制指的是将每个主题划分成多个分区（Partition），每个分区是一组有序的消息日志。生产者生产的每条消息只会被发送到一个分区中，也就是说如果向一个双分区的主题发送一条消息，这条消息要么在分区 0 中，要么在分区 1 中。如你所见，Kafka 的分区编号是从 0 开始的，如果 Topic 有 100 个分区，那么它们的分区号就是从 0 到 99。</div><div class=post-footer><a href=/posts/kafka%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E6%88%98/>阅读全文</a></div></article><article class="single summary" itemscope itemtype=http://schema.org/Article><h1 class=single-title itemprop="name headline"><a href=/posts/zookeeper%E5%AD%A6%E4%B9%A0/></a></h1><div class=post-meta><span class=post-author><a href=/ title=Author rel=" author" class=author><i class="fas fa-user-circle fa-fw"></i>作者</a></span>&nbsp;<span class=post-publish>发布于 <time datetime=0001-01-01>0001-01-01</time></span></div><div class=content>Zookeeper zookeeper是针对分布式应用程序的高性能协调服务。它在一个简单的接口中提供了通用的服务-比如naming，configuration management，synchronization，group service，因此，你不必从头开始编写它们。你可以现成使用它来实现共识，组管理，领导者选举和状态协议。你也可以根据自己的特定需求在此基础上构建。
-Zookeeper的典型应用场景：
-配置管理 DNS服务 组成员管理(group membership) 各种分布式锁 Zookeeper适用于存储和协同相关的关键数据，不适合用于大数据量存储。
-概述 Zookeeper：分布式应用程序的分布式协调服务 Zookeeper是一个分布式的，开源的协调服务，用于分布式应用程序，它提供了一组简单的原语，分布式应用程序可以基于这些原语来实现用于同步，配置维护以及组和命名空间的更高级别的服务。它被设计成易于编程的，并使用了按照文件系统熟悉的目录树结构样式设置的数据模型。它以Java运行，并且具有Java和C的绑定。
-众所周知，协调服务很难做到。它们特别容易出现诸如竞态条件和死锁之类的错误。Zookeeper背后的动机是减轻分布式应用程序从头开始实施协调服务的责任。
-设计目标 Zookeeper是一个开源的分布式协调服务系统。Zookeeper的设计目标是将那些复杂且容易出错的分布式协同服务封装起来，抽象出一个高效可靠的原语集，并以一系列简单的接口提供给用户使用。
-ZooKeeper 是简单的。Zookeeper允许分布式进程通过共享的分层名称空间相互协调，该命名空间的组织方式类似于标准文件系统。命名空间由数据寄存器组成（Zookeeper中叫znode）组成，它们类似于文件和目录。与设计用于存储的典型文件系统不同，Zookeeper数据保留在内存中，这意味着Zookeeper可以实现高吞吐量和低延迟数。
-Zookeeper的实现重视高性能、高可用、严格有序访问。Zookeeper的性能方面意味着它可以在大型的分布式系统中使用。可靠性方面使它不会成为单点故障。严格的有序意味着可以在客户端上实现复杂的同步原语。
-Zookeeper是可复制的。像它协调的分布式进程一样，Zookeeper本身也可以在称为集群的一组主机上进行复制。
-组成Zookeeper服务的服务器都必须知道彼此。它们维护内存中的状态图像，以及持久化存储中的事务日志和快照。只要大多数服务器可用，Zookeeper服务将可用。
-客户端连接到单个Zookeeper服务器。客户端维护一个TCP连接，通过该连接发送请求，获取响应，获取监视事件并发送心跳。如果与服务器的TCP连接断开，则客户端将连接到其他服务器。
-Zookeeper是有序的。Zookeeper用一个反映所有Zookeeper事务顺序的数字标记每个更新。后续操作可以使用该命令来实现更高级别的抽象，例如同步原语。
-Zookeeper是快速的。在"读取为主"的工作负载中，它特别快。Zookeeper应用程序可在数千台计算机上运行，并且在读取比写入更常见的情况下以10：1的比率运行效果最佳。
-Zookeeper数据模型 Zookeeper提供的命名空间与标准文件系统的名称空间非常相似。名称是由斜杆（/）分隔的一系列路径元素。Zookeeper命名空间中的每个节点都由路径标识。
-Zookeeper的数据模型是层次模型。层次模型常见于文件系统。层次模型和key-value模型是两种主流的数据模型。Zookeeper使用文件系统模型主要基于以下两点考虑：
-文件系统的树形结构便于表达数据之间的层次关系； 文件系统的树形结构便于为不同的应用分配独立的命名空间(namespace)； Zookeeper的层次模型称为data tree。Data tree的每个节点叫做znode.不同于文件系统，每个节点都可以保存数据，每个节点都有一个版本，版本从0开始计数。
-节点和瞬时节点 与标准文件系统不同，Zookeeper命名空间中的每个节点都可以具有与其关联的数据以及子节点。就像拥有一个文件系统一样，该文件系统也允许文件成为目录。（Zookeeper旨在存储协调数据：状态信息、配置、位置信息等，因此存储在每个节点上的数据通常很小，在千字节范围内。）我们使用术语znode来明确表示我们正在谈论Zookeeper数据节点。
-Znodes维护一个统计信息结构，其中包括用于数据更改，ACL更改和时间戳的版本号，以允许进行缓存验证和协调更新。znode的数据每次更改时，版本号都会增加。例如，每当客户端检索数据时，它也接收数据的版本。
-读取和写入存储在名称空间中每个znode上的数据都是原子操作。读取将获取与znode关联的所有数据字节，而写入将替换所有数据。每个节点都有一个访问控制列表（ACL），用于限制谁可以执行操作。
-ZooKeeper还具有瞬时节点的概念。只要创建znode的会话处于活动状态，这些znode就存在。会话结束时，将删除znode。
-条件更新和监视器 ZooKeeper支持 监视 的概念。客户端可以在znode上设置监视器。znode更改时，将触发并删除监视。当触发监视后，客户端会收到一个数据包，说明znode已更改。如果客户端与其中一个ZooKeeper服务器之间的连接断开，则客户端将收到本地通知。
-3.6.0中的新增功能：客户端还可以在znode上设置永久性的递归监视，这些监视在触发时不会删除，并且会以递归方式触发已注册znode以及所有子znode的更改。
-特性 ZooKeeper非常快速且非常简单。但是，由于其目标是作为构建更复杂的服务（例如同步）的基础，因此它提供了一组保证。它们是：
-顺序一致性&ndash;来自客户端的更新将按照发送的顺序应用。 原子性&ndash;全部更新成功或失败。没有部分结果。 单个系统映像&ndash;无论客户端连接到哪个服务器，客户端都将看到该服务的相同视图。即，即使客户端故障转移到具有相同会话的其他服务器，客户端也永远不会看到系统的较旧视图。 可靠性&ndash;应用更新后，此更新将一直持续到客户端覆盖更新为止。 及时性&ndash;保证系统的客户视图在特定时间内是最新的。 简单的API ZooKeeper的设计目标之一是提供一个非常简单的编程界面。因此，它仅支持以下操作：
-create：在树中的某个位置创建一个节点 delete：删除一个节点 exists：判断某个位置是否存在节点 get data：从节点读取数据 set data：将数据写入节点 get children：检索节点的子级列表 sync：等待数据传播 执行 ZooKeeper组件显示ZooKeeper服务的高级组件。除请求处理器外，构成ZooKeeper服务的每个服务器都复制其自己的每个组件副本。</div><div class=post-footer><a href=/posts/zookeeper%E5%AD%A6%E4%B9%A0/>阅读全文</a></div></article><article class="single summary" itemscope itemtype=http://schema.org/Article><h1 class=single-title itemprop="name headline"><a href=/posts/%E7%AE%97%E6%B3%95%E5%88%86%E6%9E%90/></a></h1><div class=post-meta><span class=post-author><a href=/ title=Author rel=" author" class=author><i class="fas fa-user-circle fa-fw"></i>作者</a></span>&nbsp;<span class=post-publish>发布于 <time datetime=0001-01-01>0001-01-01</time></span></div><div class=content>二分图最大匹配 二分图：
-int[]</div><div class=post-footer><a href=/posts/%E7%AE%97%E6%B3%95%E5%88%86%E6%9E%90/>阅读全文</a></div></article><ul class=pagination><li class=page-item><span class=page-link><a href=/>1</a></span></li><li class="page-item active"><span class=page-link><a href=/page/2/>2</a></span></li></ul></div></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreffer" title="Hugo 0.81.0">Hugo</a> 强力驱动 | 主题 - <a href=https://github.com/dillonzq/LoveIt target=_blank rel="noopener noreffer" title="LoveIt 0.2.10"><i class="far fa-kiss-wink-heart fa-fw"></i>LoveIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2021</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/ target=_blank></a></span></div></div></footer></div><div id=fixed-buttons><a href=# id=back-to-top class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i></a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><script type=text/javascript src=/lib/smooth-scroll/smooth-scroll.min.js></script><script type=text/javascript src=/lib/lazysizes/lazysizes.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10}}</script><script type=text/javascript src=/js/theme.min.js></script></body></html>
+虽然有了副本机制可以保证数据的持久化或消息不丢失，但没有解决伸缩性的问题。为了解决这个问题，Kafka设计了分区机制。Kafka 中的分区机制指的是将每个主题划分成多个分区（Partition），每个分区是一组有序的消息日志。生产者生产的每条消息只会被发送到一个分区中，也就是说如果向一个双分区的主题发送一条消息，这条消息要么在分区 0 中，要么在分区 1 中。如你所见，Kafka 的分区编号是从 0 开始的，如果 Topic 有 100 个分区，那么它们的分区号就是从 0 到 99。</div><div class=post-footer><a href=/posts/kafka%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E6%88%98/>阅读全文</a></div></article><article class="single summary" itemscope itemtype=http://schema.org/Article><h1 class=single-title itemprop="name headline"><a href=/posts/leetcode%E7%AE%97%E6%B3%95%E9%A2%98%E8%A7%A3/></a></h1><div class=post-meta><span class=post-author><a href=/ title=Author rel=" author" class=author><i class="fas fa-user-circle fa-fw"></i>作者</a></span>&nbsp;<span class=post-publish>发布于 <time datetime=0001-01-01>0001-01-01</time></span></div><div class=content>数组 1011. 在 D 天内送达包裹的能力 题目描述
+传送带上的包裹必须在 D 天内从一个港口运送到另一个港口。
+传送带上的第 i 个包裹的重量为 weights[i]。每一天，我们都会按给出重量的顺序往传送带上装载包裹。我们装载的重量不会超过船的最大运载重量。
+返回能在 D 天内将传送带上的所有包裹送达的船的最低运载能力。
+解题思路
+我们先确定船的运载能力在整个包裹最小值，与所有包裹总重量之间，通过二分查找法，找到最终的最低运载能力，因为我们能这样判断：存在一个最低的运载能力，大于这个能力的，一定也可以在D天内送完所有包裹，小于这个能力的，无法在D天内运送完这个包裹。
+我们还要解决一个判定问题：怎么判断这个运载能力可以在D天内运送完所有包裹？这个可以使用贪心的方法解决：
+由于我们必须按照数组weights 中包裹的顺序进行运送，因此我们从数组weights 的首元素开始遍历，将连续的包裹都安排在同一天进行运送。当这批包裹的重量大于运载能力 xx 时，我们就需要将最后一个包裹拿出来，安排在新的一天，并继续往下遍历。当我们遍历完整个数组后，就得到了最少需要运送的天数。
+class Solution { public int shipWithinDays(int[] weights, int D) { // 确定二分查找的左右边界 int left = Arrays.stream(weights).max().getAsInt(); int right = left * weights.length / D + 1; while (left &lt; right) { int mid = (left + right) / 2; int cur = 0; int need = 1; // 以当前mid的运载能力需要运送的天数， for (int weight : weights) { // 如果当前所有重量加上现在的重量 > mid运载能力，就需要+1天 if (cur+weight > mid) { cur = weight; ++need; } else { cur += weight; } } // 如果计算出的天数 &lt;= D, 意味着当前运载能力还可以减少，需要将抛弃右半边，right = mid if (need &lt;= D) { right = mid; } else { left = mid + 1; } } return left; } } 链表 147.</div><div class=post-footer><a href=/posts/leetcode%E7%AE%97%E6%B3%95%E9%A2%98%E8%A7%A3/>阅读全文</a></div></article><article class="single summary" itemscope itemtype=http://schema.org/Article><h1 class=single-title itemprop="name headline"><a href=/posts/mysql%E4%B8%BB%E4%BB%8E%E5%90%8C%E6%AD%A5%E5%AE%9E%E6%88%98/></a></h1><div class=post-meta><span class=post-author><a href=/ title=Author rel=" author" class=author><i class="fas fa-user-circle fa-fw"></i>作者</a></span>&nbsp;<span class=post-publish>发布于 <time datetime=0001-01-01>0001-01-01</time></span></div><div class=content>1. 拉取mysql docker 镜像
+docker pull mysql
+2. docker 文件编排
+使用docker-compose进行配置文件的编排
+version:'3'services:mysql-master:image:mysqlcontainer_name:mysql-masterenvironment:- MYSQL_ROOT_PASSWORD=rootports:- "3307:3306"volumes:- "./mysql/master/my.cnf:/etc/my.cnf"- "./mysql/master/data:/var/lib/mysql"links:- mysql-slavemysql-slave:image:mysql:5.7container_name:mysql-slaveenvironment:- MYSQL_ROOT_PASSWORD=rootports:- "3308:3306"volumes:- "./mysql/slave/my.cnf:/etc/my.cnf"- "./mysql/slave/data:/var/lib/mysql"docker-compose配置解释
+services：服务，相当于启动一个docker容器
+image：docker镜像名
+container_name：docker容器启动后的名字
+environment：环境变量
+ports：端口映射 ：主机端口：容器内端口
+volumes：挂载目录 主机内目录:容器内目录
+启动docker-compose
+docker-compose -f docker-compose-mysql.yml up -d</div><div class=post-footer><a href=/posts/mysql%E4%B8%BB%E4%BB%8E%E5%90%8C%E6%AD%A5%E5%AE%9E%E6%88%98/>阅读全文</a></div></article><article class="single summary" itemscope itemtype=http://schema.org/Article><h1 class=single-title itemprop="name headline"><a href=/posts/spring-cloud-gateway/></a></h1><div class=post-meta><span class=post-author><a href=/ title=Author rel=" author" class=author><i class="fas fa-user-circle fa-fw"></i>作者</a></span>&nbsp;<span class=post-publish>发布于 <time datetime=0001-01-01>0001-01-01</time></span></div><div class=content>编写Spring Cloud Gateway
+该项目提供了一个用于在Spring WebFlux之上构建API网关的库。Spring Cloud Gateway旨在提供一种简单而有效的方法来路由到API，并为它们提供跨领域关注，例如：安全性，监视/指标和弹性。
+创建gateway微服务
+引入依赖
+要将Spring Cloud Gateway包含在您的项目中，请使用groupId为org.springframework.cloud的启动程序，以及artifact ID为spring-cloud-starter-gateway的工件。
+&lt;dependency> &lt;groupId>org.springframework.cloud&lt;/groupId> &lt;artifactId>spring-cloud-starter-gateway&lt;/artifactId> &lt;/dependency> 如果你引入了依赖，但你不希望启用网关，设置 spring.cloud.gateway.enabled=false.
+注意：
+Spring Cloud Gateway 构建在Spring Boot 2.x, Spring WebFlux, 和 Project Reactor上。导致的结果，当你使用Spring Cloud Gateway时，许多你熟悉的同步库（例如，Spring Data和Spring Security）和模式可能不适用。
+Spring Cloud Gateway需要Spring Boot和Spring Webflux提供的Netty运行支持。它在传统的Servlet容器中或作为WAR构建时不起作用。
+编写配置
+server:port:8040spring:application:name:gatewaycloud:nacos:discovery:server-addr:localhost:8848gateway:discovery:locator:enabled:truemanagement:endpoints:web:exposure:inclue:'*'endpoint:health:show-details:always 术语和概念
+Route：网关的基本构建块。它由ID，目标URI，谓词集合和过滤器集合定义。如果聚合谓词为true，则匹配路由。
+Predicate：这是Java 8函数谓词。输入类型是Spring Framework （ServerWebExchange）。这使你可以匹配HTTP请求中的所有内容，例如请求头或参数。
+Filter：这些是已通过特定工厂构造的GatewayFilter实例。在这里，你可以在发送下游请求之前或之后修改请求和响应。</div><div class=post-footer><a href=/posts/spring-cloud-gateway/>阅读全文</a></div></article><article class="single summary" itemscope itemtype=http://schema.org/Article><h1 class=single-title itemprop="name headline"><a href=/posts/staffjoy%E9%A1%B9%E7%9B%AE%E5%AD%A6%E4%B9%A0/></a></h1><div class=post-meta><span class=post-author><a href=/ title=Author rel=" author" class=author><i class="fas fa-user-circle fa-fw"></i>作者</a></span>&nbsp;<span class=post-publish>发布于 <time datetime=0001-01-01>0001-01-01</time></span></div><div class=content>课程目标和主要内容
+掌握微服务架构和前后分离架构 掌握基于Spring Boot搭建微服务基础框架 进一步提升Java/Spring微服务开发技能 掌握Spring Boot微服务测试和相关实践 理解SaaS多租户应用的架构和设计 理解可运维架构理念和相关实践 掌握服务容器化和容器云部署相关实践 理解云时代的软件工程流程和实践 Staffjoy应用需求
+功能
+管理员Admin管理公司和排班
+雇员Worker管理个人信息
+非功能
+Saas + 定制部署
+一键部署到Kubernetes容器云
+营销和客服友好
+系统总体架构
+账户数据模型
+账户接口
+微服务接口参数校验
+统一异常处理
+DTO和DMO互转
+使用ModelMapper
+强类型接口
+GRPC属于强类型，SpringBoot属于弱类型
+如何设计一个最简网关
+网关的主要原理就是拦截url请求，进行统一处理
+我们可以先设置一个拦截器：继承OncePerRequestFilter
+@Slf4j public class ReverseProxyFilter extends OncePerRequestFilter { protected final RequestDataExtractor extractor; public ReverseProxyFilter(RequestDataExtractor extractor) { this.extractor = extractor; } @Override protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException { String originUri = extractor.</div><div class=post-footer><a href=/posts/staffjoy%E9%A1%B9%E7%9B%AE%E5%AD%A6%E4%B9%A0/>阅读全文</a></div></article><ul class=pagination><li class=page-item><span class=page-link><a href=/>1</a></span></li><li class="page-item active"><span class=page-link><a href=/page/2/>2</a></span></li><li class=page-item><span class=page-link><a href=/page/3/>3</a></span></li></ul></div></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreffer" title="Hugo 0.81.0">Hugo</a> 强力驱动 | 主题 - <a href=https://github.com/dillonzq/LoveIt target=_blank rel="noopener noreffer" title="LoveIt 0.2.10"><i class="far fa-kiss-wink-heart fa-fw"></i>LoveIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2021</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/ target=_blank></a></span></div></div></footer></div><div id=fixed-buttons><a href=# id=back-to-top class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i></a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><script type=text/javascript src=/lib/smooth-scroll/smooth-scroll.min.js></script><script type=text/javascript src=/lib/lazysizes/lazysizes.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10}}</script><script type=text/javascript src=/js/theme.min.js></script></body></html>
